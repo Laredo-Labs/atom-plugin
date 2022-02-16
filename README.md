@@ -1,1 +1,1 @@
-# atom-hacking
+# atom-plugin
