@@ -10,7 +10,6 @@ const service = axios.create({
 
 export async function autocompleteHttp(params: types.Request): Promise<types.Response> {
   const response = await service.get('/word', {params: {number:  10, swear: 0}});
-
   return {
     prefix: params.prefix,
     responses: response.data?.map((entry: any) => {
@@ -18,6 +17,6 @@ export async function autocompleteHttp(params: types.Request): Promise<types.Res
         confidence: -1.0,
         value: entry
       }
-    })
+    }) || []
   }
 }

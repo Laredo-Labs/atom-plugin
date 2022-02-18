@@ -63,7 +63,7 @@ export class CompletionProvider implements AutocompleteProvider {
         descriptionMoreURL: "google.com",
         checkpoint: editor.getBuffer().createCheckpoint()
       }
-    });
+    }) || [];
   }
 
   onDidInsertSuggestion(params : SuggestionInsertedEvent): void {
