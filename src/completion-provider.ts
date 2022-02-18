@@ -56,10 +56,11 @@ export class CompletionProvider implements AutocompleteProvider {
 
     return response.responses?.map((entry) => {
       return {
-        leftLabel: "Left label",
-        displayText: entry.value,
+        type: "snippet",
         snippet: entry.value,
         replacementPrefix: params.prefix,
+        description: "Random word from https://random-word-api.herokuapp.com",
+        descriptionMoreURL: "google.com",
         checkpoint: editor.getBuffer().createCheckpoint()
       }
     });
