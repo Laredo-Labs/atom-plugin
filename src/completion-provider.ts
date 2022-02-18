@@ -63,30 +63,6 @@ export class CompletionProvider implements AutocompleteProvider {
         checkpoint: editor.getBuffer().createCheckpoint()
       }
     });
-
-
-    // const results = [
-    //   {
-    //     leftLabel: "Context before current position",
-    //     displayText: before,
-    //     snippet: before,
-    //     iconHTML: undefined,
-    //     replacementPrefix: params.prefix,
-    //     descriptionMarkdown: this.formatMarkdown(params.prefix, before),
-    //     checkpoint: editor.getBuffer().createCheckpoint(),
-    //   },
-    //   {
-    //     leftLabel: "Context after current position",
-    //     displayText: after,
-    //     snippet: after,
-    //     iconHTML: undefined,
-    //     replacementPrefix: params.prefix,
-    //     descriptionMarkdown: this.formatMarkdown(params.prefix, after),
-    //     checkpoint: editor.getBuffer().createCheckpoint(),
-    //   }
-    // ];
-    //
-    // return results;
   }
 
   onDidInsertSuggestion(params : SuggestionInsertedEvent): void {
