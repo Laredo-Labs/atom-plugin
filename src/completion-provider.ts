@@ -7,6 +7,7 @@ import {
   SuggestionInsertedEvent,
 } from "atom/autocomplete-plus";
 import { RangeCompatible } from "atom";
+import { autocompleteHttp } from './providers/remote/utils'
 
 const CHAR_LIMIT = 1024;
 
@@ -44,28 +45,25 @@ export class CompletionProvider implements AutocompleteProvider {
     const before = editor.getBuffer().getTextInRange([beforeStartOffset, bufferPosition]);
     const after = editor.getBuffer().getTextInRange([bufferPosition, afterEndOffset]);
 
-    const results = [
+    const response = await autocompleteHttp(
       {
-        leftLabel: "Context before current position",
-        displayText: before,
-        snippet: before,
-        iconHTML: undefined,
-        replacementPrefix: params.prefix,
-        descriptionMarkdown: this.formatMarkdown(params.prefix, before),
-        checkpoint: editor.getBuffer().createCheckpoint(),
-      },
-      {
-        leftLabel: "Context after current position",
-        displayText: after,
-        snippet: after,
-        iconHTML: undefined,
-        replacementPrefix: params.prefix,
-        descriptionMarkdown: this.formatMarkdown(params.prefix, after),
-        checkpoint: editor.getBuffer().createCheckpoint(),
+        prefix: params.prefix,
+        filename: editor.getBuffer().getPath(),
+        beforeContext: before,
+        afterContext: after
       }
-    ];
+    );
 
-    return results;
+    return response.responses?.map((entry) => {
+      return {
+        type: "snippet",
+        snippet: entry.value,
+        replacementPrefix: params.prefix,
+        description: "Random word from https://random-word-api.herokuapp.com",
+        descriptionMoreURL: "google.com",
+        checkpoint: editor.getBuffer().createCheckpoint()
+      }
+    }) || [];
   }
 
   onDidInsertSuggestion(params : SuggestionInsertedEvent): void {
