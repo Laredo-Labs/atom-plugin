@@ -8,8 +8,7 @@ import {
 } from "atom/autocomplete-plus";
 import { RangeCompatible } from "atom";
 import { autocompleteHttp } from './providers/remote/utils'
-
-const CHAR_LIMIT = 1024;
+import * as types from './providers/remote/types';
 
 export class CompletionProvider implements AutocompleteProvider {
 
@@ -21,7 +20,7 @@ export class CompletionProvider implements AutocompleteProvider {
   filterSuggestions?: boolean | undefined;
 
   constructor() {
-    this.selector = '.text.plain';
+    this.selector = '.py';
     this.inclusionPriority = 6;
     this.suggestionPriority = 8;
     this.excludeLowerPriority = true;
@@ -29,45 +28,38 @@ export class CompletionProvider implements AutocompleteProvider {
   }
 
   async getSuggestions(params: SuggestionsRequestedEvent): Promise<Suggestions> {
-    console.log("getSuggestions")
     const { editor, bufferPosition } = params;
+    const repo = atom.project.getRepositories()[0]
+    var beforeContext: types.Line[] = [];
+    for (var i = Math.max(0, bufferPosition.row - 3); i < bufferPosition.row; i++) {
+      beforeContext.push({line_num: i + 1, source: editor.lineTextForBufferRow(i) + "\n"})
+    }
 
-    const offset = editor.getBuffer().characterIndexForPosition(bufferPosition);
-    console.log("offset", offset)
-
-    const beforeStartOffset = editor.getBuffer().positionForCharacterIndex(Math.max(0, offset - CHAR_LIMIT));
-    console.log("before max offset", beforeStartOffset)
-
-    const afterEndOffset = editor.getBuffer().positionForCharacterIndex(Math.min(editor.getBuffer().getMaxCharacterIndex(), offset + CHAR_LIMIT));
-    console.log("after max offset", afterEndOffset)
-    // const beforeStart = editor.getBuffer().characterIndexForPosition(beforeStartOffset);
-
-    const before = editor.getBuffer().getTextInRange([beforeStartOffset, bufferPosition]);
-    const after = editor.getBuffer().getTextInRange([bufferPosition, afterEndOffset]);
-
-    const response = await autocompleteHttp(
-      {
-        prefix: params.prefix,
-        filename: editor.getBuffer().getPath(),
-        beforeContext: before,
-        afterContext: after
-      }
-    );
+    const response = await autocompleteHttp({
+        repo_path: repo.getWorkingDirectory(),
+        commit_msg: "Need to figure out where to stash this.",
+        path: atom.project.relativizePath(editor.getPath())[1],
+        context_lines: beforeContext,
+        path_filters: [".py"],
+        current_line: {
+          source: editor.lineTextForBufferRow(bufferPosition.row) + "\n",
+          line_num: bufferPosition.row + 1,
+          caret: bufferPosition.column
+        }
+      });
 
     return response.responses?.map((entry) => {
       return {
-        type: "snippet",
-        snippet: entry.value,
+        text: entry.value,
+        displayText: entry.value.substring(0, 64),
         replacementPrefix: params.prefix,
-        description: "Random word from https://random-word-api.herokuapp.com",
-        descriptionMoreURL: "google.com",
-        checkpoint: editor.getBuffer().createCheckpoint()
+        description: "test description",
+        descriptionMoreURL: "https://github.com/Laredo-Labs"
       }
     }) || [];
   }
 
   onDidInsertSuggestion(params : SuggestionInsertedEvent): void {
-    console.log("onDidInsertSuggestion", params)
     const checkpoint = (<any>params.suggestion).checkpoint;
     const replacementPrefix = params.suggestion.replacementPrefix;
     const currentPosition = params.editor.getCursorBufferPosition();
